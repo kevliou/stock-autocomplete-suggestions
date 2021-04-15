@@ -34,6 +34,20 @@ class AutocompleteSuggestions{
 class SearchMappingService{
     constructor(data) {
         this.data = data;
+
+        /*
+        * Rank order for autocomplete suggestions:
+        * 1. Full match on ticker Symbol match (e.g. AMD)
+        * 3. Matches on company name substrings, sorted by descending market cap (e.g. Advanced Mic)
+        * 2. Partial prefix match on ticker symbol, sorted by descending market cap (e.g AM)
+        *
+        * Only the top 5 results would be shown for each search
+        */
+
+        this.suggestionsMap = new AutocompleteSuggestions();
+        this.addFullTicker();
+        this.addCompanyName();
+        this.addPartialTicker();
     }
 
     createTickerMap() {
@@ -49,69 +63,53 @@ class SearchMappingService{
     }
 
     createSearchJSON(){
-        /*
-        * Priority order for autocomplete suggestions:
-        * 1. Full ticker Symbol match (e.g. AMD)
-        * 2. Partial prefix match on ticker symbol (e.g AM)
-        * 3. Prefix match on company name (e.g. Advanced M)
-        * 4. Partial match on words in a company name, sorted by market cap (e.g. Micro)
-        *
-        * Only the top 5 results would be shown for each search
-        */
-
-        let suggestionsMap = new AutocompleteSuggestions();
-        this.addTickerMap(suggestionsMap);
-        this.addFullCompanyNameMap(suggestionsMap);
-        this.addPartialCompanyNameMap(suggestionsMap);
-
-        return suggestionsMap.convertToJSON();
+        return this.suggestionsMap.convertToJSON();
     }
 
-    addTickerMap(suggestionsMap){
-        // Private class function - Priority 1 & 2
+    addFullTicker() {
         this.data.sort(sortByProperty('Symbol'));
 
         this.data.forEach(el => {
             const ticker = el['Symbol'];
-
-            for (let i=ticker.length; i>0; i--) {
-                suggestionsMap.add(ticker.substr(0,i), ticker);
-            }
-        });
+            this.suggestionsMap.add(ticker, ticker);
+        })
     }
-    
-    addFullCompanyNameMap(suggestionsMap){
-        // Private class function - Priority 3
-        this.data.sort(sortByProperty('Name'));
 
-        this.data.forEach( el => {
-            const ticker = el['Symbol'];
-            const name = formatCompanyName(el['Name']);
-    
-            for (let i=name.length; i>0; i--) {
-                suggestionsMap.add(name.substring(0,i), ticker);
-            }
-        });
-    }
-    
-    addPartialCompanyNameMap(suggestionsMap){
-        // Private class function - Priority 4
-        this.data.sort(sortByProperty('Market Cap'));
+    addCompanyName() {
+        this.data.sort(sortByProperty('-Market Cap'));
 
         this.data.forEach(el => {
             const ticker = el['Symbol'];
             const name = formatCompanyName(el['Name']);
 
-            // Skip the first word since it would have already been captured in Priority 3
-            let spaceIndex = name.indexOf(' ');
+            let spaceIndex = 0;
 
-            while (!(spaceIndex === -1)) {
-                let partialName = name.substring(spaceIndex + 1);
-                for (let i = partialName.length; i > 0; i--) {
-                    suggestionsMap.add(partialName.substring(0, i), ticker);
+            while (spaceIndex !== -1) {
+                let partialName = '';
+                if (spaceIndex !== 0) {
+                    partialName = name.substring(spaceIndex + 1);
+                } else {
+                    partialName = name.substring(spaceIndex);
                 }
-
+                
+                for (let i = partialName.length; i> 0; i--) {
+                    this.suggestionsMap.add(partialName.substring(0,i), ticker);
+                }
+            
                 spaceIndex = name.indexOf(' ', spaceIndex + 1);
+            }
+        });
+    }
+
+    addPartialTicker(){
+        // Private class function - Priority 1 & 2
+        this.data.sort(sortByProperty('-Market Cap'));
+
+        this.data.forEach(el => {
+            const ticker = el['Symbol'];
+
+            for (let i=ticker.length - 1; i>0; i--) {
+                this.suggestionsMap.add(ticker.substr(0,i), ticker);
             }
         });
     }

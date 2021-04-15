@@ -1,28 +1,28 @@
 const { test, expect, describe, beforeAll } = require('@jest/globals');
 const app = require('./app');
 
-// describe('CSV parser on Nasdaq stock screener', () => {
-//     const parseCSV = app.parseCSV;
-//     const csvPath = './data/nasdaq_screener.csv';
-//     let data;
+describe('CSV parser on Nasdaq stock screener', () => {
+    const parseCSV = app.parseCSV;
+    const csvPath = './data/nasdaq_screener.csv';
+    let data;
 
-//     beforeAll(async () => {
-//         data = await parseCSV(csvPath);
-//     });
+    beforeAll(async () => {
+        data = await parseCSV(csvPath);
+    });
 
-//     test('has data', () => {
-//         expect(data).toBeDefined();
-//     });
-//     test('has Symbol property', () => {
-//         expect(data[0].hasOwnProperty('Symbol')).toBeTruthy();
-//     });
-//     test('has Name property', () => {
-//         expect(data[0].hasOwnProperty('Name')).toBeTruthy();
-//     });
-//     test('has Market Cap property', () => {
-//         expect(data[0].hasOwnProperty('Market Cap')).toBeTruthy();
-//     });
-// });
+    test('has data', () => {
+        expect(data).toBeDefined();
+    });
+    test('has Symbol property', () => {
+        expect(data[0].hasOwnProperty('Symbol')).toBeTruthy();
+    });
+    test('has Name property', () => {
+        expect(data[0].hasOwnProperty('Name')).toBeTruthy();
+    });
+    test('has Market Cap property', () => {
+        expect(data[0].hasOwnProperty('Market Cap')).toBeTruthy();
+    });
+});
 
 describe('Autocomplete Suggestions class object', () => {
     const AutocompleteSuggestions = app.AutocompleteSuggestions;
@@ -95,96 +95,72 @@ describe('Search mapping service', () => {
     let mappingService = new SearchMappingService(data);
 
     test('create ticker dictionary', () => {
-        let suggestionsMap = new app.AutocompleteSuggestions();
         const dict = mappingService.createTickerMap();
         expect(dict).toEqual({'AAL': 'American Airlines Group Inc'})
     });
 
-    test('create ticker prefix mapping', () => {
+    test('create json', () => {
         const answer = {
-            'AAL': ['AAL'],
-            'AA' : ['AAL'],
-            'A' : ['AAL']
+            "AAL":["AAL"],
+            "AA":["AAL"],
+            "A":["AAL"],
+            "AMERICAN AIRLINES GROUP INC":["AAL"],
+            "AMERICAN AIRLINES GROUP IN":["AAL"],
+            "AMERICAN AIRLINES GROUP I":["AAL"],
+            "AMERICAN AIRLINES GROUP ":["AAL"],
+            "AMERICAN AIRLINES GROUP":["AAL"],
+            "AMERICAN AIRLINES GROU":["AAL"],
+            "AMERICAN AIRLINES GRO":["AAL"],
+            "AMERICAN AIRLINES GR":["AAL"],
+            "AMERICAN AIRLINES G":["AAL"],
+            "AMERICAN AIRLINES ":["AAL"],
+            "AMERICAN AIRLINES":["AAL"],
+            "AMERICAN AIRLINE":["AAL"],
+            "AMERICAN AIRLIN":["AAL"],
+            "AMERICAN AIRLI":["AAL"],
+            "AMERICAN AIRL":["AAL"],
+            "AMERICAN AIR":["AAL"],
+            "AMERICAN AI":["AAL"],
+            "AMERICAN A":["AAL"],
+            "AMERICAN ":["AAL"],
+            "AMERICAN":["AAL"],
+            "AMERICA":["AAL"],
+            "AMERIC":["AAL"],
+            "AMERI":["AAL"],
+            "AMER":["AAL"],
+            "AME":["AAL"],
+            "AM":["AAL"],
+            "AIRLINES GROUP INC":["AAL"],
+            "AIRLINES GROUP IN":["AAL"],
+            "AIRLINES GROUP I":["AAL"],
+            "AIRLINES GROUP ":["AAL"],
+            "AIRLINES GROUP":["AAL"],
+            "AIRLINES GROU":["AAL"],
+            "AIRLINES GRO":["AAL"],
+            "AIRLINES GR":["AAL"],
+            "AIRLINES G":["AAL"],
+            "AIRLINES ":["AAL"],
+            "AIRLINES":["AAL"],
+            "AIRLINE":["AAL"],
+            "AIRLIN":["AAL"],
+            "AIRLI":["AAL"],
+            "AIRL":["AAL"],
+            "AIR":["AAL"],
+            "AI":["AAL"],
+            "GROUP INC":["AAL"],
+            "GROUP IN":["AAL"],
+            "GROUP I":["AAL"],
+            "GROUP ":["AAL"],
+            "GROUP":["AAL"],
+            "GROU":["AAL"],
+            "GRO":["AAL"],
+            "GR":["AAL"],
+            "G":["AAL"],
+            "INC":["AAL"],
+            "IN":["AAL"],
+            "I":["AAL"],
         }
-
-        let suggestionsMap = new app.AutocompleteSuggestions();
-        mappingService.addTickerMap(suggestionsMap);
-        expect(suggestionsMap.convertToJSON()).toEqual(JSON.stringify(answer));
-    });
-
-    test('create full company name prefix mapping', () => {
-        const answer = {
-            'AMERICAN AIRLINES GROUP INC' : ['AAL'],
-            'AMERICAN AIRLINES GROUP IN' : ['AAL'],
-            'AMERICAN AIRLINES GROUP I' : ['AAL'],
-            'AMERICAN AIRLINES GROUP ' : ['AAL'],
-            'AMERICAN AIRLINES GROUP' : ['AAL'],
-            'AMERICAN AIRLINES GROU' : ['AAL'],
-            'AMERICAN AIRLINES GRO' : ['AAL'],
-            'AMERICAN AIRLINES GR' : ['AAL'],
-            'AMERICAN AIRLINES G' : ['AAL'],
-            'AMERICAN AIRLINES ' : ['AAL'],
-            'AMERICAN AIRLINES' : ['AAL'],
-            'AMERICAN AIRLINE' : ['AAL'],
-            'AMERICAN AIRLIN' : ['AAL'],
-            'AMERICAN AIRLI' : ['AAL'],
-            'AMERICAN AIRL' : ['AAL'],
-            'AMERICAN AIR' : ['AAL'],
-            'AMERICAN AI' : ['AAL'],
-            'AMERICAN A' : ['AAL'],
-            'AMERICAN ' : ['AAL'],
-            'AMERICAN' : ['AAL'],
-            'AMERICA' : ['AAL'],
-            'AMERIC' : ['AAL'],
-            'AMERI' : ['AAL'],
-            'AMER' : ['AAL'],
-            'AME' : ['AAL'],
-            'AM' : ['AAL'],
-            'A' : ['AAL']
-        }
-
-        let suggestionsMap = new app.AutocompleteSuggestions();
-        mappingService.addFullCompanyNameMap(suggestionsMap);
-        expect(suggestionsMap.convertToJSON()).toEqual(JSON.stringify(answer));
-    });
-
-    test('create partial company name prefix mapping', () => {
-        // Skips the first word since it would be covered by the full search
-        const answer = {
-            'AIRLINES GROUP INC' : ['AAL'],
-            'AIRLINES GROUP IN' : ['AAL'],
-            'AIRLINES GROUP I' : ['AAL'],
-            'AIRLINES GROUP ' : ['AAL'],
-            'AIRLINES GROUP' : ['AAL'],
-            'AIRLINES GROU' : ['AAL'],
-            'AIRLINES GRO' : ['AAL'],
-            'AIRLINES GR' : ['AAL'],
-            'AIRLINES G' : ['AAL'],
-            'AIRLINES ' : ['AAL'],
-            'AIRLINES' : ['AAL'],
-            'AIRLINE' : ['AAL'],
-            'AIRLIN' : ['AAL'],
-            'AIRLI' : ['AAL'],
-            'AIRL' : ['AAL'],
-            'AIR' : ['AAL'],
-            'AI' : ['AAL'],
-            'A' : ['AAL'],
-            'GROUP INC' : ['AAL'],
-            'GROUP IN' : ['AAL'],
-            'GROUP I' : ['AAL'],
-            'GROUP ' : ['AAL'],
-            'GROUP' : ['AAL'],
-            'GROU' : ['AAL'],
-            'GRO' : ['AAL'],
-            'GR' : ['AAL'],
-            'G' : ['AAL'],
-            'INC' : ['AAL'],
-            'IN' : ['AAL'],
-            'I' : ['AAL']
-        }
-
-        let suggestionsMap = new app.AutocompleteSuggestions();
-        mappingService.addPartialCompanyNameMap(suggestionsMap);
-        expect(suggestionsMap.convertToJSON()).toEqual(JSON.stringify(answer));
+        
+        expect(JSON.parse(mappingService.createSearchJSON())).toMatchObject(answer);
     });
 });
